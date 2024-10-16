@@ -1,14 +1,16 @@
-import express from "express";
+import express from 'express';
+import cors from 'cors';
+import authRoutes from './routes/auth.js'; 
 
 const app = express();
-const port = 3000;
 
-app.use(express.json());
+app.use(cors());
+app.use(express.json()); 
 
-app.get("/", (req, res) => {
-    res.send("Hello World!");
-});
+app.use('/api/auth', authRoutes);
+
+const port = 5000;
 
 app.listen(port, () => {
-    console.log(`Running on port http://localhost:${port}`);
+    console.log(`Server running on http://localhost:${port}`);
 });
