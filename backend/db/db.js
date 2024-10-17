@@ -17,6 +17,7 @@ const db = new sqlite3.Database(join(__dirname, '../database.db'), (err) => {
 const createTables = () => {
     const userTable = `CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff INTEGER NOT NULL DEFAULT 0,
         username TEXT NOT NULL UNIQUE,
         email TEXT NOT NULL
         password TEXT NOT NULL,
