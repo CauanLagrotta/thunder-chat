@@ -1,42 +1,58 @@
-import sqlite3 from 'sqlite3'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
+import sqlite3 from "sqlite3";
+import path from "path";
+import { fileURLToPath } from "url";
+import dotenv from "dotenv";
 
-const __fileName = fileURLToPath(import.meta.url);
-const __dirname = dirname(__fileName);
+dotenv.config();
 
-const db = new sqlite3.Database(join(__dirname, '../database.db'), (err) => {
-    if(err){
-        console.log('Erro ao conectar ao banco de dados: ', err.message)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-    }else{
-        console.log('Conectado ao banco de dados')
-    }
+const dbPath = path.resolve(__dirname, "../database.db");
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error("Erro ao conectar ao banco de dados: ", err);
+  } else {
+    console.log("Conectado ao banco de dados");
+  }
 });
 
-const createTables = () => {
-    const userTable = `CREATE TABLE IF NOT EXISTS users (
+db.serialize(() => {
+  db.run(
+    `CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        staff INTEGER NOT NULL DEFAULT 0,
-        username TEXT NOT NULL UNIQUE,
-        email TEXT NOT NULL
-        password TEXT NOT NULL,
-    )`
+        username TEXT NOT NULL,
+        useremail TEXT NOT NULL UNIQUE,
+        userpassword TEXT NOT NULL,
+        staff INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    (err) => {
+      if (err) {
+        console.log("Erro ao criar tabela de usuários: ", err);
+      } else {
+        console.log("Tabela de usuários criada");
+      }
+    }
+  );
 
-    const messageTable = `CREATE TABLE IF NOT EXISTS messages (
+  db.run(
+    `CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        userId INTEGER,
+        user_id INTEGER NOT NULL,
         message TEXT NOT NULL,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (userId) REFERENCES users(id)
-    )`
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+        )`,
+    (err) => {
+      if (err) {
+        console.log("Erro ao criar tabela de mensagens: ", err);
+      } else {
+        console.log("Tabela de mensagens criada");
+      }
+    }
+  );
+});
 
-    db.serialize(()=>{
-        db.run(userTable);
-        db.run(messageTable);
-    });
-};
 
-createTables();
-
-export default db
+export default db;
