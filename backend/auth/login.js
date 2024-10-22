@@ -8,7 +8,7 @@ import express from "express";
 import db from "../db/db.js";
 
 const loginRoute = express.Router();
-
+//login
 loginRoute.post("/", (req, res) => {
   const { useremail, userpassword } = req.body;
 
@@ -40,6 +40,7 @@ loginRoute.post("/", (req, res) => {
   });
 });
 
+//header
 loginRoute.get("/header", (req, res) => {
   const token = req.cookies.token;
   if (!token) {
@@ -60,7 +61,8 @@ loginRoute.get("/header", (req, res) => {
   });
 });
 
-loginRoute.get("/logout", (req, res) => {
+//logout
+loginRoute.get("/", (req, res) => {
   res.clearCookie("token");
   res.status(200).send({ msg: "Logout bem-sucedido" });
 });

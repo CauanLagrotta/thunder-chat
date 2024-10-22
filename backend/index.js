@@ -4,8 +4,10 @@ import dotenv from "dotenv";
 import { Server } from "socket.io";
 import { createServer } from "http";
 import cookieParser from "cookie-parser";
+
 import loginRoute from "./auth/login.js";
 import registerRoute from "./auth/register.js";
+
 import db from "./db/db.js";
 
 dotenv.config();
@@ -25,6 +27,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/login", loginRoute);
+app.use("/logout", loginRoute);
 app.use("/register", registerRoute);
 
 io.on("connection", (socket) => {
