@@ -18,16 +18,22 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "http://localhost:5173",
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
   },
 });
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  credentials: true,
+}));
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }));
 
-app.use("/login", loginRoute);
-app.use("/logout", loginRoute);
+// Usar prefixo "/auth" para as rotas de autenticação
+app.use("/auth", loginRoute);
 app.use("/register", registerRoute);
 
 io.on("connection", (socket) => {

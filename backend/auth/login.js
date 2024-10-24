@@ -2,13 +2,13 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import bcrypt from "bcrypt";
-import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import express from "express";
 import db from "../db/db.js";
 
 const loginRoute = express.Router();
-//login
+
+// login
 loginRoute.post("/", (req, res) => {
   const { useremail, userpassword } = req.body;
 
@@ -25,7 +25,6 @@ loginRoute.post("/", (req, res) => {
           const id = user.id;
           const accessToken = jwt.sign({ id }, process.env.TOKEN, {
             expiresIn: "1d",
-            
           });
 
           res.cookie("token", accessToken);
@@ -40,29 +39,36 @@ loginRoute.post("/", (req, res) => {
   });
 });
 
-//header
-loginRoute.get("/header", (req, res) => {
+// Middleware para verificar o token
+const verifyUser = (req, res, next) => {
   const token = req.cookies.token;
+  console.log("Token recebido:", token);
   if (!token) {
     return res.status(401).send({ msg: "Autenticação inválida" });
   }
-
   jwt.verify(token, process.env.TOKEN, (err, decoded) => {
     if (err) {
+      console.log("Erro ao verificar token:", err);
       return res.status(401).send({ msg: "Autenticação inválida" });
     }
-    
     db.get("SELECT * FROM users WHERE id = ?", [decoded.id], (err, user) => {
       if (err || !user) {
+        console.log("Usuário não encontrado ou erro no banco de dados:", err);
         return res.status(401).send({ msg: "Usuário não encontrado" });
       }
-      res.status(200).send({ msg: "Autenticação bem-sucedida" });
+      req.user = user;
+      next();
     });
   });
+};
+
+// header (rota separada para verificação)
+loginRoute.get("/header", verifyUser, (req, res) => {
+  return res.status(200).send({ msg: "Autenticação bem-sucedida", user: req.user });
 });
 
-//logout
-loginRoute.get("/", (req, res) => {
+// logout (rota separada)
+loginRoute.get("/logout", (req, res) => {
   res.clearCookie("token");
   res.status(200).send({ msg: "Logout bem-sucedido" });
 });
